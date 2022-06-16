@@ -11,6 +11,12 @@ class Board:
         self.name = name
         self.addShips()
 
+    def printBoard(self):
+        print("\n  " + " ".join(str(x) for x in string.ascii_lowercase[:col_size]))
+        for i in range(col_size):
+            print(str(i + 1) + " " +" ".join(self.board[i][j] for j in range(row_size)))  
+        print()  
+
     def addShips(self): 
         sizes=[5,4,3,3,2]
         while sizes:
@@ -54,17 +60,11 @@ class PlayGame:
         self.turn = None
     
     def printBoards(self,turn):
-        printBoard(rival)
-        printBoard(player)
+        rival.printBoard()
+        player.printBoard()
 
         if turn == player:
             print("Enter a coordinate pair, (e.g. 'a4'):")
-
-def printBoard(p):
-    print("\n  " + " ".join(str(x) for x in string.ascii_lowercase[:col_size]))
-    for i in range(col_size):
-        print(str(i + 1) + " " +" ".join(p.board[i][j] for j in range(row_size)))  
-    print()  
 
 def validCordinates(self,cordinates):
         valid = True
@@ -73,8 +73,26 @@ def validCordinates(self,cordinates):
                  valid = False
         return valid
 
-
-
+def selectAttacks():
+    cordSelected = False   
+    while cordSelected == False:
+        try:
+            playerSelection = list(input())
+            c = playerSelection[0]
+            r = int(playerSelection[1])
+        except ValueError:
+            print("Invalid option! Select again.")
+            continue
+        if c in list(string.ascii_lowercase[:9]) and r in range(1,10):    
+            c = string.ascii_lowercase.index(playerSelection[0])
+            r = int(playerSelection[1]) - 1
+            cordSelected == True
+            break
+        else:
+            print("Invalid option! Select again")
+    return c, r
+    
+#make this a Board Method (eventually)
 def shipSank(board, r,c):
     for ship in board.ship_locations:
         if [r,c] in ship:
@@ -90,16 +108,26 @@ rival = Board("Computer")
 game = PlayGame()
 
 sanked_ships = 0
-while sanked_ships < 5:
+while game.gameOver == False:
     
     attack_success = True
     while attack_success == True:
         
         game.printBoards(player)
         
-        guess = list(input())
-        c = string.ascii_lowercase.index(guess[0])
-        r = int(guess[1]) - 1
+        valid_guess = False
+        
+
+        while valid_guess == False:
+            guess = list(input())
+            c = string.ascii_lowercase.index(guess[0])
+            r = int(guess[1]) - 1
+            if c in string.ascii_lowercase[:9] and r in range(0,9):
+                valid_guess = True
+            else:
+                print("Unvalid Input")
+                valid_guess = False
+
 
         attack_success = rival.attackBoard(r,c)
         
@@ -116,9 +144,7 @@ while sanked_ships < 5:
     
     attack_success = True
     while attack_success == True:
-       
-        printBoard(rival)
-        printBoard(player)
+
         print("It's the computer's turn.")
         attack_success = player.attackBoard(random.randint(0,8),random.randint(0,8))
         
