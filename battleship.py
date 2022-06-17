@@ -9,6 +9,7 @@ class Board:
         self.ship_locations = []
         self.guesses = []
         self.name = name
+        self.shipsDestroyed = 0
         self.addShips()
 
     def printBoard(self):
@@ -18,7 +19,8 @@ class Board:
         print()  
 
     def addShips(self): 
-        sizes=[5,4,3,3,2]
+        #sizes=[5,4,3,3,2]
+        sizes=[1]
         while sizes:
             valid_slot = self.createShip(sizes[0])
             if valid_slot == True:
@@ -55,16 +57,13 @@ class Board:
             return False
 
 class PlayGame:
-    def __init__(self):
+    def __init__(self,player,rival):
         self.gameOver = False
-        self.turn = None
-    
-    def printBoards(self,turn):
+        self.turns = 0
+
+    def printBoards(self):
         rival.printBoard()
         player.printBoard()
-
-        if turn == player:
-            print("Enter a coordinate pair, (e.g. 'a4'):")
 
 def validCordinates(self,cordinates):
         valid = True
@@ -73,10 +72,11 @@ def validCordinates(self,cordinates):
                  valid = False
         return valid
 
-def selectAttacks():
+def selectCoordinates():
     cordSelected = False   
     while cordSelected == False:
         try:
+            print("{player}, enter a coordinate pair, (e.g. 'a4'):".format(player = player.name))
             playerSelection = list(input())
             c = playerSelection[0]
             r = int(playerSelection[1])
@@ -91,7 +91,7 @@ def selectAttacks():
         else:
             print("Invalid option! Select again")
     return c, r
-    
+
 #make this a Board Method (eventually)
 def shipSank(board, r,c):
     for ship in board.ship_locations:
@@ -105,55 +105,47 @@ def shipSank(board, r,c):
 player = Board("Daniel")
 rival = Board("Computer")
 
-game = PlayGame()
+game = PlayGame(player,rival)
 
-sanked_ships = 0
-while game.gameOver == False:
-    
-    attack_success = True
-    while attack_success == True:
-        
-        game.printBoards(player)
-        
-        valid_guess = False
-        
+def which_turn():
+    if game.turns % 2 == 0:
+        return player, rival
+    else:
+        return rival, player
 
-        while valid_guess == False:
-            guess = list(input())
-            c = string.ascii_lowercase.index(guess[0])
-            r = int(guess[1]) - 1
-            if c in string.ascii_lowercase[:9] and r in range(0,9):
-                valid_guess = True
-            else:
-                print("Unvalid Input")
-                valid_guess = False
+def repeatAttack(attacker,defender):
+    while True:
+        game.printBoards()
 
-
-        attack_success = rival.attackBoard(r,c)
+        if attacker == player:
+            c, r = selectCoordinates()
+        else:
+            r,c = random.randint(0,8),random.randint(0,8)
         
-        #Check if guess was successful.
+        attack_success = defender.attackBoard(r,c)
         if attack_success == True:
-            print("Your attack was succesful. Strike again.")
+            print("{attacker}'s attack was succesful.".format(attacker = attacker.name))
 
-            #Check if a boat has been sanked.
+            #Check if the attacked boat has been sanked.
             if shipSank(rival,r,c) == True:
-                print("You sank a boat!")
-                sanked_ships += 1
+                print("{attacker} sank one of {defender}'s boats!".format(attacker = attacker.name, defender = defender.name))
+                attacker.shipsDestroyed += 1
+
+                if attacker.shipsDestroyed == 1:
+                    game.gameOver = True
+                    break
         else:
-            print("You missed!\n")
+            print("{attacker}'s attack missed!\n".format(attacker = attacker.name))
+            break
+
+while game.gameOver == False:
+    attacker, defender = which_turn()
+    repeatAttack(attacker,defender)
+    game.turns += 1
+
+
     
-    attack_success = True
-    while attack_success == True:
-
-        print("It's the computer's turn.")
-        attack_success = player.attackBoard(random.randint(0,8),random.randint(0,8))
-        
-        if attack_success == True:
-            print("The computer's attacks was succesful.\n")
-        else:
-            print("The computer missed!\n")
-
-print("GAME OVER.")
+print("GAME OVER. {attacker} won!".format(attacker = attacker.name))
     
 
 
