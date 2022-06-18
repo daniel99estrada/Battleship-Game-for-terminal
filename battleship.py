@@ -13,10 +13,8 @@ class Board:
         self.guesses = []
         self.name = name
         self.shipsDestroyed = 0
-
-        #Add n ships to board.
         self.addShips()
-
+    
     def addShips(self): 
         sizes=[5,4,3,3,2]
         while sizes:
@@ -39,13 +37,20 @@ class Board:
                 cordinates.append([coordinate2 + i,coordinate1])
         
         #Append the ship's cordinates to the ship_locations list attribute if valid.
-        if validCordinates(self,cordinates) == True:
+        if self.validCordinates(cordinates) == True:
             for cord in cordinates:
                 self.board[cord[0]][cord[1]] = "X"
             self.ship_locations.append(cordinates)
             return True     
         else:
             return False
+
+    def validCordinates(self,cordinates):
+            valid = True
+            for cord in cordinates:
+                if self.board[cord[0]][cord[1]] == "X":
+                    valid = False
+            return valid
 
     def attackBoard(self,r,c):
         if self.board[r][c] == "X":
@@ -69,13 +74,6 @@ class Board:
             print(str(i + 1) + " " +" ".join(board[i][j] for j in range(row_size)))  
         print()  
 
-def validCordinates(self,cordinates):
-        valid = True
-        for cord in cordinates:
-            if self.board[cord[0]][cord[1]] == "X":
-                 valid = False
-        return valid
-
 player = Board()
 rival = Board("The Computer")
 
@@ -88,6 +86,7 @@ game = PlayGame()
 def printBoards():
     rival.printBoard(rival.rivalBoard)
     player.printBoard(player.board)
+    print("-"*42)
 
 def selectCoordinates():
     cordSelected = False   
@@ -113,13 +112,11 @@ def selectRivalCordinates():
     for i in range(4):
         time.sleep(0.4)
         print(".",end="")
-    #print("\n")
     return random.randint(0,8),random.randint(0,8)
 
 def gameLoop(attacker,defender):
     while True:
         printBoards()
-
         if attacker == player:
             r, c = selectCoordinates()
         else:
@@ -132,11 +129,12 @@ def gameLoop(attacker,defender):
             if attacker == player:
                 rival.rivalBoard[r][c] = "*"
 
-            #Check if the attacked boat has been sanked.
+            #Check if the last attack sank a boat.
             if rival.shipSank(r,c) == True:
                 print("{attacker} sank one of {defender}'s boats!".format(attacker = attacker.name, defender = defender.name))
                 attacker.shipsDestroyed += 1
 
+                #The game loop will end once a player sinks n boats.
                 if attacker.shipsDestroyed == 5:
                     game.gameOver = True
                     break
